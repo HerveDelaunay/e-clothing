@@ -6,6 +6,10 @@ export const CategoriesContext = createContext({
   categoriesMap: {},
 });
 
+export const CATEGORIES_ACTION_TYPES = {
+  SET_CATEGORIES_MAP: 'SET_CATEGORIES_MAP',
+};
+
 const INITIAL_STATE = {
   categoriesMap: {}
 }
@@ -14,7 +18,7 @@ const categoriesReducer = (state, action) => {
   const { type, payload } = action
 
   switch (type) {
-    case 'SET_CATEGORIES_MAP':
+    case CATEGORIES_ACTION_TYPES.SET_CATEGORIES_MAP:
       return {
         ...state,
         ...payload
@@ -37,7 +41,7 @@ export const CategoriesProvider = ({ children }) => {
   }, []);
 
   const setCategoriesMap = (categoryMap) => {
-    dispatch({ type: 'SET_CATEGORIES_MAP', payload: { categoriesMap: categoryMap } })
+    dispatch({ type: CATEGORIES_ACTION_TYPES.SET_CATEGORIES_MAP, payload: { categoriesMap: categoryMap } })
   }
 
   const value = { categoriesMap };
