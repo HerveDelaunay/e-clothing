@@ -6,6 +6,8 @@ import {
   createUserDocumentFromAuth,
 } from '../utils/firebase/firebase.utils';
 
+import { createAction } from '../utils/reducer/reducer.utils';
+
 export const UserContext = createContext({
   setCurrentUser: () => null,
   currentUser: null,
