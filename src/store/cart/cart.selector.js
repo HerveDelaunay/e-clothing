@@ -18,4 +18,4 @@ export const selectCartTotal = createSelector([selectCartItems], (cartItems) =>
   )
 );
 
-export const selectCartIsOpen = (state) => state.cart.isCartOpen;
+export const selectIsCartOpen = (state) => state.cart.isCartOpen;
