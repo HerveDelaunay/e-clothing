@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -9,25 +8,29 @@ import {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
+  User,
+  NextOrObserver,
+  UserCredential,
 } from "firebase/auth";
 import {
   getFirestore,
   doc,
   getDoc,
-  getDocs,
   setDoc,
   collection,
   writeBatch,
   query,
+  getDocs,
+  QueryDocumentSnapshot,
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDo0okqUxNSJqtwtrVVzz2GgOirL6yVLy8",
-  authDomain: "e-clothing-db-ab0e6.firebaseapp.com",
-  projectId: "e-clothing-db-ab0e6",
-  storageBucket: "e-clothing-db-ab0e6.appspot.com",
-  messagingSenderId: "1026114043152",
-  appId: "1:1026114043152:web:2c80805c7c92876a1fb995",
+  apiKey: "AIzaSyDDU4V-_QV3M8GyhC9SVieRTDM4dbiT0Yk",
+  authDomain: "crwn-clothing-db-98d4d.firebaseapp.com",
+  projectId: "crwn-clothing-db-98d4d",
+  storageBucket: "crwn-clothing-db-98d4d.appspot.com",
+  messagingSenderId: "626766232035",
+  appId: "1:626766232035:web:506621582dab103a4d08d6",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -45,12 +48,17 @@ export const signInWithGoogleRedirect = () =>
   signInWithRedirect(auth, googleProvider);
 
 export const db = getFirestore();
-export const addCollectionAndDocuments = async (
-  collectionKey,
-  objectsToAdd
-) => {
-  const batch = writeBatch(db);
+
+type ObjectToAdd = {
+  title: string;
+};
+
+export const addCollectionAndDocuments = async <T extends ObjectToAdd>(
+  collectionKey: string,
+  objectsToAdd: T[]
+): Promise<void> => {
   const collectionRef = collection(db, collectionKey);
+  const batch = writeBatch(db);
 
   objectsToAdd.forEach((object) => {
     const docRef = doc(collectionRef, object.title.toLowerCase());
@@ -61,18 +69,43 @@ export const addCollectionAndDocuments = async (
   console.log("done");
 };
 
-export const getCategoriesAndDocuments = async () => {
+type CategoryItem = {
+  id: number;
+  imageUrl: string;
+  name: string;
+  price: number;
+};
+
+type CategoryData = {
+  imageUrl: string;
+  items: CategoryItem[];
+  title: string;
+};
+
+export const getCategoriesAndDocuments = async (): Promise<CategoryData[]> => {
   const collectionRef = collection(db, "categories");
   const q = query(collectionRef);
 
   const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map((docSnapshot) => docSnapshot.data());
+  return querySnapshot.docs.map(
+    (docSnapshot) => docSnapshot.data() as CategoryData
+  );
+};
+
+export type AdditionalInformation = {
+  displayName?: string;
+};
+
+export type UserData = {
+  createdAt: Date;
+  displayName: string;
+  email: string;
 };
 
 export const createUserDocumentFromAuth = async (
-  userAuth,
-  additionalInformation = {}
-) => {
+  userAuth: User,
+  additionalInformation: AdditionalInformation = {} as AdditionalInformation
+): Promise<QueryDocumentSnapshot<UserData> | void> => {
   if (!userAuth) return;
 
   const userDocRef = doc(db, "users", userAuth.uid);
@@ -91,31 +124,37 @@ export const createUserDocumentFromAuth = async (
         ...additionalInformation,
       });
     } catch (error) {
-      console.log("error creating the user", error.message);
+      console.log("error creating the user", error);
     }
   }
 
-  return userSnapshot;
+  return userSnapshot as QueryDocumentSnapshot<UserData>;
 };
 
-export const createAuthUserWithEmailAndPassword = async (email, password) => {
+export const createAuthUserWithEmailAndPassword = async (
+  email: string,
+  password: string
+): Promise<UserCredential | void> => {
   if (!email || !password) return;
 
   return await createUserWithEmailAndPassword(auth, email, password);
 };
 
-export const signInAuthUserWithEmailAndPassword = async (email, password) => {
+export const signInAuthUserWithEmailAndPassword = async (
+  email: string,
+  password: string
+): Promise<UserCredential | void> => {
   if (!email || !password) return;
 
   return await signInWithEmailAndPassword(auth, email, password);
 };
 
-export const signOutUser = async () => await signOut(auth);
+export const signOutUser = async (): Promise<void> => await signOut(auth);
 
-export const onAuthStateChangedListener = (callback) =>
+export const onAuthStateChangedListener = (callback: NextOrObserver<User>) =>
   onAuthStateChanged(auth, callback);
 
-export const getCurrentUser = () => {
+export const getCurrentUser = (): Promise<User | null> => {
   return new Promise((resolve, reject) => {
     const unsubscribe = onAuthStateChanged(
       auth,
